@@ -1,5 +1,12 @@
 from urllib2 import urlopen
 
+#handling unicode in both PY2 and PY3
+import sys
+if sys.version_info >= (3,):
+  chr_func = chr
+else:
+  chr_func = unichr
+
 
 def getRandomPage():
   page = urlopen('http://lyrics.wikia.com/Special:Random')
@@ -20,7 +27,7 @@ def getLyrics(content):
 
   lines = content[i1:i2].split('<br />')
 
-  lines_translated = [''.join(chr(int(c[:-1])) for c in line.split('&#') if c[:-1].isdigit()) for line in lines if line]
+  lines_translated = [''.join(chr_func(int(c[:-1])) for c in line.split('&#') if c[:-1].isdigit()) for line in lines if line]
 
   return lines_translated
 
