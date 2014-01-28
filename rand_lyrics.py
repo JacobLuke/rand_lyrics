@@ -66,5 +66,16 @@ def generateMarkov(n=10):
   return lines
 
 if __name__ == '__main__':
-  lyrics = getRandomLyrics()
-  print '\n'.join(lyrics)
+  if len(sys.argv) == 1:
+    lyrics = getRandomLyrics()
+    print '\n'.join(lyrics)
+  elif len(sys.argv) == 2 and sys.argv[1].isdigit():
+    n = int(sys.argv[1])
+    if n > 0:
+     lyrics = generateMarkov(n)
+     print '\n'.join(' '.join(line) for line in lyrics)
+    else:
+      print "Second argument must be a positive integer"
+  else:
+    print "usage: python rand_lyrics.py [n]"
+
