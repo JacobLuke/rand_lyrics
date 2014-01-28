@@ -3,6 +3,7 @@ from urllib2 import urlopen
 from collections import defaultdict
 
 import random
+import re
 
 #handling unicode in both PY2 and PY3
 import sys
@@ -32,9 +33,16 @@ def parseLyrics(content):
 
   lines = content[i1:i2].split('<br />')
   
-  lines_translated = [''.join(chr_func(int(c[:-1])) for c in line.split('&#') if c[:-1].isdigit()) for line in lines if line]
+  lines_translated = [''.join(chr_func(int(c[:-1])) for c in line.split('&#') if c[:-1].isdigit()).strip() for line in lines if line]
 
   return lines_translated
+
+#get rid of the broken lyrics using a simple heuristic
+def validLyrics(lyrics):
+  for line in lyrics:
+    if re.search('[a-z][A-Z]', line):
+      return False
+  return True
 
 def getRandomLyrics():
   page = getRandomPage()
@@ -45,7 +53,10 @@ def generateMarkov(n=10):
   lengths = []
   starts = []
   for i in range(n):
-    lyrics = getRandomLyrics()
+    while True:
+      lyrics = getRandomLyrics()
+      if validLyrics(lyrics):
+        break
     lengths.append(len(lyrics))
     for line in lyrics:
       words = line.strip().split()
