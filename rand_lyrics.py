@@ -1,9 +1,14 @@
-from urllib2 import urlopen
+from __future__ import print_function
+
+
+from urllib2 import urlopen, HTTPError
 
 from collections import defaultdict
 
 import random
 import re
+
+from time import sleep
 
 #handling unicode in both PY2 and PY3
 import sys
@@ -15,10 +20,16 @@ else:
 
 
 def getRandomPage():
-  page = urlopen('http://lyrics.wikia.com/Special:Random')
-  content = page.read()
-  page.close()
-  return content
+  while True:
+    try:
+      page = urlopen('http://lyrics.wikia.com/Special:Random')
+      content = page.read()
+      page.close()
+      return content
+    except HTTPError as e:
+      print("Encountered exception:", e, file=sys.stderr)
+      sleep(100)
+
 
 def parseLyrics(content):
   
@@ -50,14 +61,15 @@ def getRandomLyrics():
 
 def generateMarkov(n=10):
   path = defaultdict(list)
-  lengths = []
+  total_len = 0
   starts = []
   for i in range(n):
+    print("\rRetrieving lyrics {0} of {1} ({2}%)".format(i+1, n, i*100/n), end='', file=sys.stderr)
     while True:
       lyrics = getRandomLyrics()
-      if validLyrics(lyrics):
+      if lyrics and validLyrics(lyrics):
         break
-    lengths.append(len(lyrics))
+    total_len += len(lyrics)
     for line in lyrics:
       words = line.strip().split()
       if not words: continue
@@ -65,9 +77,11 @@ def generateMarkov(n=10):
       for index in range(len(words) - 1):
         path[words[index]].append(words[index+1])
       path[words[-1]].append(None)
-  
+
+  print("Processing lyrics...", file=sys.stderr) 
   lines = []
-  for i in range(random.choice(lengths)):
+
+  for i in range(total_len / n):
     word = random.choice(starts)
     line = []
     while word is not None:
@@ -77,16 +91,13 @@ def generateMarkov(n=10):
   return lines
 
 if __name__ == '__main__':
-  if len(sys.argv) == 1:
-    lyrics = getRandomLyrics()
-    print '\n'.join(lyrics)
-  elif len(sys.argv) == 2 and sys.argv[1].isdigit():
-    n = int(sys.argv[1])
-    if n > 0:
-     lyrics = generateMarkov(n)
-     print '\n'.join(' '.join(line) for line in lyrics)
-    else:
-      print "Second argument must be a positive integer"
+  if len(sys.argv) == 2 and sys.argv[1].isdigit() and int(sys.argv[1]) > 0:
+    n = int(sys.argv[1]) 
+  elif len(sys.argv) == 1:
+	n = 10
   else:
-    print "usage: python rand_lyrics.py [n]"
-
+    print("usage: python rand_lyrics.py [ n=10 ]")
+    sys.exit(1)
+  lyrics = generateMarkov(n)
+  print('\n'.join(' '.join(line) for line in lyrics))
+  
