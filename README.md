@@ -1,17 +1,17 @@
 rand_lyrics
 ===========
 
-Gets random lyrics off the internet, because why not
+Gets random lyrics off the internet and makes a new song out of them, because why not
 
 To run, simply type
 
     python rand_lyrics.py
+    
+This will read 10 songs off of the internet and use them to create a new song, using a line-oriented simple Markov Chain. The songs are pretty hit-or-miss because it's all user-generated content and users can't spell. Also sometimes a song just doesn't have lyrics. Or it's not in English, which is why this is all unicode-aware. (It handles Spanish and French really interestingly, because of the overlap with Engllish. It's great.)
 
-and it will randomly output a (real) song. Or empty text, sometimes. Who knows? It runs off a wiki of user-generated content, so sometimes it'll be crap and you'll just have to deal with it.
+The program takes an optional integer argument:
 
-To create a Markov Chain-generated "song", add a second integer argument
-
-    python rand_lyrics.py 10
+    python rand_lyrics.py 100
 
 The `n` parameter denotes how many songs will be used to train the Markov Chain. 10 seemed like a good compromise between not just spitting out an existing song and not running forever. If you want something really cool, run it with `100`. No it doesn't parallelize. I'll wait.
 
